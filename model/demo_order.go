@@ -1,10 +1,12 @@
 package model
 
+import "github.com/jinzhu/gorm"
+
 type DemoOrder struct {
-	ID			int
-	OrderId 	string
-	UserName	string
-	Amount		string
-	Status		string
-	FileUrl	string
+	gorm.Model
+	OrderId  string`gorm:"unique;not null"`
+	UserName string
+	Amount   string
+	Status   string
+	FileUrl  string
 }
