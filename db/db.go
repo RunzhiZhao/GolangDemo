@@ -37,7 +37,7 @@ func CreateDB(dbConfig *DbConfig) {
 	if !checkConfig(dbConfig) {
 		panic("db配置不正确")
 	}
-	cStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbConfig.Username, dbConfig.Password, dbConfig.Host, dbConfig.Port, "information_schema")
+	cStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbConfig.Username, dbConfig.Password, dbConfig.Host, dbConfig.Port, dbConfig.DbName)
 	openedDb, err := gorm.Open("mysql", cStr)
 
 	if err != nil {

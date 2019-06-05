@@ -20,5 +20,5 @@ func StartRouter()  {
 	// 4. 获取 demo_order 列表 （需要包含： 模糊查找、根据创建时间，金额排序）
 	router.GET("/getOrders", handler.GetOrders)
 
-	router.Run("localhost:3306")
+	router.Run(":3306")
 }

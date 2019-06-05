@@ -19,8 +19,32 @@ func CreateOrderService(req *model.CreateOrderReq) (err error)  {
 
 	gormDb := db.GetDb()
 	//defer  DB.Close()
-	err = gormDb.Create(&order).Error
-	return err
+	if err = gormDb.Create(&order).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// 事务
+func CreateOrderService1(req *model.CreateOrderReq) (err error)  {
+
+	// 生成随机字符串模拟orderId
+	guid := xid.New()
+
+	order := model.DemoOrder{OrderId: guid.String(), UserName: req.UserName, Amount: req.Amount, Status: "0", FileUrl: req.FileUrl}
+
+	gormDb := db.GetDb()
+
+	gormDb.Begin()
+
+	if err = gormDb.Create(&order).Error; err != nil {
+		gormDb.Rollback()
+		return err
+	}
+
+	gormDb.CommonDB()
+
+	return nil
 }
 
 
@@ -48,9 +72,40 @@ func GetOrderInfoService(req *model.GetOrderInfoReq) *model.DemoOrder {
 func GetOrdersService(req *model.GetOrdersReq) *[]model.DemoOrder {
 	gormDb := db.GetDb()
 	var orders = []model.DemoOrder{}
-	if err := gormDb.Where("user_name LIKE ?", req.Keyword).Find(&orders).Error; err != nil {
-		fmt.Println(err)
-		return nil
+
+	var page uint = 1
+	if req.Page > 1 {
+		page = req.Page
 	}
+
+	var pageSize uint = 5
+	if req.PageSize > 0 {
+		pageSize = req.PageSize
+	}
+
+	if len(req.Keyword) > 0 {	// 模糊查找
+		if err := gormDb.Where("user_name LIKE ?", req.Keyword).Offset((page - 1) * pageSize).Limit(pageSize).Find(&orders).Error; err != nil {
+			panic(err.Error())
+			return nil
+		}
+	} else if req.SortType == 1 {	// 根据创建时间排序
+
+		if err := gormDb.Order("created_at").Offset((page - 1) * pageSize).Limit(pageSize).Find(&orders).Error; err != nil {
+			panic(err.Error())
+			return nil
+		}
+
+	} else if req.SortType == 2 {	// 根据金额排序
+
+		if err := gormDb.Order("amount").Offset((page - 1) * pageSize).Limit(pageSize).Find(&orders).Error; err != nil {
+			panic(err.Error())
+			return nil
+		}
+	}
+
+	fmt.Println(len(orders))
+	fmt.Println("..\n..")
+	fmt.Print(orders)
+
 	return &orders
 }
