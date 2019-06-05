@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/rs/xid"
 	"golang_demo/db"
 	"golang_demo/model"
@@ -84,7 +83,8 @@ func GetOrdersService(req *model.GetOrdersReq) *[]model.DemoOrder {
 	}
 
 	if len(req.Keyword) > 0 {	// 模糊查找
-		if err := gormDb.Where("user_name LIKE ?", req.Keyword).Offset((page - 1) * pageSize).Limit(pageSize).Find(&orders).Error; err != nil {
+		keyword := "%" + req.Keyword + "%"
+		if err := gormDb.Where("user_name LIKE ?", keyword).Offset((page - 1) * pageSize).Limit(pageSize).Find(&orders).Error; err != nil {
 			panic(err.Error())
 			return nil
 		}
@@ -102,10 +102,6 @@ func GetOrdersService(req *model.GetOrdersReq) *[]model.DemoOrder {
 			return nil
 		}
 	}
-
-	fmt.Println(len(orders))
-	fmt.Println("..\n..")
-	fmt.Print(orders)
 
 	return &orders
 }

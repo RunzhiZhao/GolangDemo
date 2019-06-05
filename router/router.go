@@ -3,11 +3,16 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"golang_demo/handler"
+	"net/http"
 )
 
 func StartRouter()  {
 	router := gin.Default()
 
+	router.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "It Works")
+	})
+	
 	// 1. 创建插入demo_order
 	router.POST("/createOrder", handler.CreateOrder)
 
@@ -18,7 +23,7 @@ func StartRouter()  {
 	router.GET("/getOrderInfo", handler.GetOrderInfo)
 
 	// 4. 获取 demo_order 列表 （需要包含： 模糊查找、根据创建时间，金额排序）
-	router.GET("/getOrders", handler.GetOrders)
+	router.POST("/getOrders", handler.GetOrders)
 
-	router.Run(":3306")
+	router.Run(":8080")
 }

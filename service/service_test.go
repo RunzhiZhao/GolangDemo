@@ -67,7 +67,7 @@ func TestGetOrdersService(t *testing.T) {
 	db.GetDb().AutoMigrate(&model.DemoOrder{})
 
 	if orders := GetOrdersService(&model.GetOrdersReq{
-		Keyword: "%a%",
+		Keyword: "a",
 	}); orders == nil {
 		t.Error("fail")
 	}
