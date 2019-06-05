@@ -128,10 +128,10 @@ func UploadFile(c *gin.Context)  {
 // 6. Gin 文件下载
 func DownloadFile(c *gin.Context)  {
 
-	filename := "huge.gpeg"
+	filename := "huge.jpeg"
 	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 	c.Writer.Header().Add("Content-Type", "application/octet-stream")
-	c.File("./file/gpeg")
+	c.File("./file/huge.jpeg")
 }
 
 
@@ -147,8 +147,5 @@ func ExportOrderExcel(c *gin.Context)  {
 	filename := "order_demo.xlsx"
 	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 	c.Writer.Header().Add("Content-Type", "application/octet-stream")
-	c.File("order_demo.xlsx")
-
-	response := model.ResponseData{Code: 0, Status: "success", Message: "下载order_excel.xlsx", Data: ""}
-	c.JSON(http.StatusOK, response)
+	c.File("./file/order_demo.xlsx")
 }
