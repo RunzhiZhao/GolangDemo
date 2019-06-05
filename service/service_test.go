@@ -11,12 +11,12 @@ func TestCreateOrderService(t *testing.T) {
 
 	db.GetDb().AutoMigrate(&model.DemoOrder{})
 
-	if err := CreateOrderService(&model.CreateOrderReq{
+	if order := CreateOrderService(&model.CreateOrderReq{
 		UserName: "user04",
 		Amount:   29.9,
 		FileUrl:  "www.baidu.com",
-	}); err != nil {
-		t.Error(err.Error())
+	}); order == nil {
+		t.Error("error")
 	}
 }
 
@@ -25,12 +25,12 @@ func TestCreateOrderService1(t *testing.T) {
 
 	db.GetDb().AutoMigrate(&model.DemoOrder{})
 
-	if err := CreateOrderService1(&model.CreateOrderReq{
+	if order := CreateOrderService1(&model.CreateOrderReq{
 		UserName: "User07",
 		Amount: 19.9,
 		FileUrl: "github.com",
-	}); err != nil {
-		t.Error(err.Error())
+	}); order == nil {
+		t.Error("error")
 	}
 }
 
@@ -39,13 +39,13 @@ func TestUpdateOrderService(t *testing.T) {
 
 	db.GetDb().AutoMigrate(&model.DemoOrder{})
 
-	if err := UpdateOrderService(&model.UpdateOrderReq{
-		OrderId: "bjr3h8i3q560itdtgjp0",
+	if order := UpdateOrderService(&model.UpdateOrderReq{
+		OrderId: "bjroh5q3q561jbctp23g",
 		Amount:  79.9,
 		FileUrl: "www.baidu.com",
 		Status:  "1",
-	}); err != nil {
-		t.Error(err.Error())
+	}); order == nil {
+		t.Error("error")
 	}
 }
 
@@ -95,6 +95,13 @@ func TestGetOrdersService3(t *testing.T) {
 		Page:     1,
 		PageSize: 3,
 	}); orders == nil {
+		t.Error("fail")
+	}
+}
+
+func TestDataTableToExcelService(t *testing.T) {
+	db.GetDb().AutoMigrate(&model.DemoOrder{})
+	if err := DataTableToExcelService(); err != nil {
 		t.Error("fail")
 	}
 }

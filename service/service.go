@@ -1,7 +1,9 @@
 package service
 
 import (
+	"fmt"
 	"github.com/rs/xid"
+	"github.com/tealeg/xlsx"
 	"golang_demo/db"
 	"golang_demo/model"
 )
@@ -9,7 +11,7 @@ import (
 
 
 // 1. 创建插入demo_order
-func CreateOrderService(req *model.CreateOrderReq) (err error)  {
+func CreateOrderService(req *model.CreateOrderReq) *model.DemoOrder  {
 
 	// 生成随机字符串模拟orderId
 	guid := xid.New()
@@ -18,14 +20,15 @@ func CreateOrderService(req *model.CreateOrderReq) (err error)  {
 
 	gormDb := db.GetDb()
 	//defer  DB.Close()
-	if err = gormDb.Create(&order).Error; err != nil {
-		return err
+	if err := gormDb.Create(&order).Error; err != nil {
+		panic(err.Error())
+		return nil
 	}
-	return nil
+	return &order
 }
 
 // 事务
-func CreateOrderService1(req *model.CreateOrderReq) (err error)  {
+func CreateOrderService1(req *model.CreateOrderReq) *model.DemoOrder  {
 
 	// 生成随机字符串模拟orderId
 	guid := xid.New()
@@ -36,23 +39,28 @@ func CreateOrderService1(req *model.CreateOrderReq) (err error)  {
 
 	gormDb.Begin()
 
-	if err = gormDb.Create(&order).Error; err != nil {
+	if err := gormDb.Create(&order).Error; err != nil {
 		gormDb.Rollback()
-		return err
+		panic(err.Error())
+		return nil
 	}
 
 	gormDb.CommonDB()
 
-	return nil
+	return &order
 }
 
 
 // 2. 更新 demo_order （amount、status、file_url）
-func UpdateOrderService(req *model.UpdateOrderReq) (err error) {
+func UpdateOrderService(req *model.UpdateOrderReq) *model.DemoOrder {
 	gormDb := db.GetDb()
 	var order model.DemoOrder
-	err = gormDb.Model(&order).Where("order_id = ?", req.OrderId).Updates(model.DemoOrder{Amount: req.Amount, Status: req.Status, FileUrl: req.FileUrl}).Error
-	return err
+	if err := gormDb.Model(&order).Where("order_id = ?", req.OrderId).Updates(model.DemoOrder{Amount: req.Amount, Status: req.Status, FileUrl: req.FileUrl}).Error; err != nil {
+		panic(err.Error())
+		return nil
+	}
+	gormDb.Where("order_id = ?", req.OrderId).Find(&order)
+	return &order
 }
 
 
@@ -70,7 +78,7 @@ func GetOrderInfoService(req *model.GetOrderInfoReq) *model.DemoOrder {
 // 4. 获取 demo_order 列表 （需要包含： 模糊查找、根据创建时间，金额排序）
 func GetOrdersService(req *model.GetOrdersReq) *[]model.DemoOrder {
 	gormDb := db.GetDb()
-	var orders = []model.DemoOrder{}
+	var orders []model.DemoOrder
 
 	var page uint = 1
 	if req.Page > 1 {
@@ -104,4 +112,81 @@ func GetOrdersService(req *model.GetOrdersReq) *[]model.DemoOrder {
 	}
 
 	return &orders
+}
+
+
+
+// 7. demo_order表转成excel
+func DataTableToExcelService() (err error) {
+
+	gormDb := db.GetDb()
+
+	var file *xlsx.File
+	var sheet *xlsx.Sheet
+	var row *xlsx.Row
+	var cell *xlsx.Cell
+
+	file = xlsx.NewFile()
+	sheet, err = file.AddSheet("Sheet1")
+	if err != nil {
+		fmt.Printf(err.Error())
+	}
+
+	// 创建标题
+	row = sheet.AddRow()
+	cell = row.AddCell()
+	cell.SetValue("id")
+	cell = row.AddCell()
+	cell.SetValue("created_at")
+	cell = row.AddCell()
+	cell.SetValue("updated_at")
+	cell = row.AddCell()
+	cell.SetValue("deleted_at")
+	cell = row.AddCell()
+	cell.SetValue("order_id")
+	cell = row.AddCell()
+	cell.SetValue("user_name")
+	cell = row.AddCell()
+	cell.SetValue("amount")
+	cell = row.AddCell()
+	cell.SetValue("status")
+	cell = row.AddCell()
+	cell.SetValue("file_url")
+
+	// 获取数据
+	var orders []model.DemoOrder
+	if err = gormDb.Order("created_at").Find(&orders).Error; err != nil {
+		panic(err.Error())
+		return nil
+	}
+
+	for _, value := range orders {
+		row = sheet.AddRow()
+		cell = row.AddCell()
+		cell.SetValue(value.ID)
+		cell = row.AddCell()
+		cell.SetValue(value.CreatedAt)
+		cell = row.AddCell()
+		cell.SetValue(value.UpdatedAt)
+		cell = row.AddCell()
+		cell.SetValue(value.DeletedAt)
+		cell = row.AddCell()
+		cell.SetValue(value.OrderId)
+		cell = row.AddCell()
+		cell.SetValue(value.UserName)
+		cell = row.AddCell()
+		cell.SetValue(value.Amount)
+		cell = row.AddCell()
+		cell.SetValue(value.Status)
+		cell = row.AddCell()
+		cell.SetValue(value.FileUrl)
+	}
+
+	if err = file.Save("./file/order_demo.xlsx"); err != nil {
+		fmt.Printf(err.Error())
+		return err
+	}
+
+	return nil
+
 }

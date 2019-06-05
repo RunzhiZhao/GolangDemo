@@ -9,7 +9,7 @@ type CreateOrderReq struct {
 
 // /updateOrder接口请求参数
 type UpdateOrderReq struct {
-	OrderId string  `gorm:"unique;not null" json:"order_id"`
+	OrderId string  `json:"order_id"`
 	Amount  float64 `json:"amount"`
 	Status  string  `json:"status"`
 	FileUrl string  `json:"file_url"`
@@ -25,5 +25,5 @@ type GetOrdersReq struct {
 	Keyword  string `json:"keyword"`   /* 关键字模糊查找 */
 	SortType int    `json:"sort_type"` /* 1: 根据创建时间排序， 2根据金额排序*/
 	Page     uint   `json:"page"`      /* 页码 */
-	PageSize uint   `json:"page_size"`    /* 每页数量 */
+	PageSize uint   `json:"page_size"` /* 每页数量 */
 }
